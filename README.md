@@ -5,11 +5,12 @@ Next.js(App Router) 기반 영어 단어장 웹 클라이언트입니다.
 ## Tech Stack
 - Next.js + TypeScript
 - CSS Modules + Design Tokens (토스풍)
+- JWT Access(메모리) + Refresh(localStorage)
 
 ## 로컬 실행
 
-1. 백엔드가 `http://localhost:8080`에서 떠 있어야 합니다.
-2. 환경변수:
+1. 백엔드가 `http://localhost:8080`에서 떠 있어야 합니다. (`server/` 참고)
+2. 프론트 환경변수:
 
 ```bash
 cp .env.local.example .env.local
@@ -23,3 +24,17 @@ npm run dev
 ```
 
 - 앱: http://localhost:3000
+
+## 화면
+| 경로 | 설명 |
+|------|------|
+| `/login`, `/signup` | 인증 |
+| `/home` | `{displayName}의 단어장` 홈 |
+| `/words` | 단어 목록 · 상세/수정/삭제 |
+| `/words/add` | AI 예문 초안 → 확인 후 저장 |
+| `/quiz` | 뜻 가리기 퀴즈 · mark-learned |
+
+## 인증 메모
+- Access Token은 메모리에만 보관합니다.
+- Refresh Token은 `localStorage`에 저장하며, Access 만료(401) 시 `/api/auth/refresh`로 재발급합니다.
+- 이상적인 httpOnly Secure 쿠키 방식은 백엔드 쿠키 연동 후 개선 예정입니다.
