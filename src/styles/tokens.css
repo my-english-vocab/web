@@ -1,0 +1,96 @@
+:root {
+  /* Brand */
+  --color-primary: #3182f6;
+  --color-primary-hover: #2272eb;
+  --color-primary-pressed: #1b64da;
+  --color-primary-soft: #eaf3ff;
+  --color-primary-softer: #f3f8ff;
+
+  /* Atmosphere */
+  --color-bg: #f4f6f9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #eef1f5;
+  --color-bg-input: #f2f4f6;
+  --color-border: rgba(25, 31, 40, 0.06);
+  --color-border-strong: rgba(25, 31, 40, 0.12);
+
+  /* Text */
+  --color-text: #191f28;
+  --color-text-secondary: #4e5968;
+  --color-text-tertiary: #8b95a1;
+  --color-text-inverse: #ffffff;
+  --color-danger: #f04452;
+  --color-danger-soft: #fff1f1;
+  --color-success: #00a881;
+  --color-success-soft: #e8faf4;
+
+  /* Elevation — soft, almost borderless */
+  --shadow-card: 0 2px 8px rgba(25, 31, 40, 0.04),
+    0 12px 28px rgba(25, 31, 40, 0.04);
+  --shadow-float: 0 8px 28px rgba(25, 31, 40, 0.12);
+  --shadow-cta: 0 -8px 24px rgba(244, 246, 249, 0.9);
+
+  /* Radius */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Typography */
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+
+  /* Layout — mobile-first; desktop overrides below */
+  --header-height: 56px;
+  --page-max-width: 440px;
+  --page-gutter: 20px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --transition-fast: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-normal: 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-spring: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Laptop / desktop landscape — wider composition */
+@media (min-width: 900px) {
+  :root {
+    --page-max-width: 960px;
+    --page-gutter: 32px;
+    --header-height: 64px;
+    --text-2xl: 32px;
+    --text-3xl: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --page-max-width: 1080px;
+    --page-gutter: 40px;
+  }
+}

@@ -1,0 +1,113 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 22, 32, 0.42);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+  animation: fadeIn 180ms ease;
+}
+
+.panel {
+  width: 100%;
+  max-width: var(--page-max-width);
+  max-height: min(88dvh, 760px);
+  overflow: auto;
+  background: var(--color-bg-elevated);
+  border-radius: 28px 28px 24px 24px;
+  box-shadow: var(--shadow-float);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: slideUp var(--transition-spring) both;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+  margin: -4px auto 4px;
+  opacity: 0.7;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.03em;
+}
+
+.close {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-input);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.close:hover {
+  background: var(--color-bg-muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  padding-top: var(--space-2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .backdrop {
+    align-items: center;
+    padding: 32px;
+  }
+
+  .panel {
+    border-radius: var(--radius-2xl);
+    max-width: 520px;
+    padding: 28px 28px 24px;
+  }
+
+  .handle {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .panel {
+    max-width: 560px;
+  }
+}

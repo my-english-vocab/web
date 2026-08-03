@@ -1,0 +1,99 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  padding-left: 2px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-input);
+  color: var(--color-text);
+  padding: 15px 16px;
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.01em;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.inputWrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.inputWithToggle {
+  padding-right: 48px;
+}
+
+.revealButton {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.revealButton:hover {
+  color: var(--color-text-secondary);
+  background: rgba(25, 31, 40, 0.06);
+}
+
+.revealButton:focus-visible {
+  outline: none;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.input:hover,
+.textarea:hover {
+  background: #eceff3;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  background: var(--color-bg-elevated);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.12);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: var(--line-height-normal);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  padding-left: 2px;
+}
