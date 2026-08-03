@@ -34,3 +34,12 @@ export function markLearned(id: number) {
     method: "POST",
   });
 }
+
+export function generateExample(term: string, definition?: string) {
+  return apiRequest<
+    import("@/lib/api/types").GenerateExampleResponse
+  >("/api/words/generate-example", {
+    method: "POST",
+    body: { term, ...(definition ? { definition } : {}) },
+  });
+}
