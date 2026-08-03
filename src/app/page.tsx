@@ -1,22 +1,18 @@
+import { Button } from "@/components/ui/Button";
+import { PageShell } from "@/components/ui/PageShell";
+
 export default function RootPage() {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-        fontFamily: "Pretendard, sans-serif",
-      }}
-    >
-      <div style={{ textAlign: "center" }}>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.03em" }}>
+    <PageShell>
+      <div style={{ display: "grid", gap: 16, placeItems: "start" }}>
+        <h1 style={{ fontSize: 28, letterSpacing: "-0.03em", fontWeight: 800 }}>
           My English Vocab
         </h1>
-        <p style={{ marginTop: 12, color: "#4e5968" }}>
-          Next.js 프론트엔드 초기 세팅
+        <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.55 }}>
+          토스풍 디자인 토큰과 공통 UI 컴포넌트
         </p>
+        <Button type="button">시작하기</Button>
       </div>
-    </main>
+    </PageShell>
   );
 }
