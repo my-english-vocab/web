@@ -59,11 +59,7 @@ export default function LoginPage() {
             <span className={styles.brandDot} aria-hidden />
             <span className={styles.brand}>My English Vocab</span>
           </div>
-          <h2 className={styles.headline}>
-            다시 만나서
-            <br />
-            반가워요
-          </h2>
+          <h2 className={styles.headline}>다시 만나서 반가워요</h2>
           <p className={styles.subcopy}>
             모르는 단어만 모아 두고, 여러 번 가볍게 훑어 보세요.
           </p>
