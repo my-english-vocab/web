@@ -13,10 +13,8 @@ import { ApiError } from "@/lib/api/client";
 import type { AuthUser, LoginRequest, SignupRequest } from "@/lib/api/types";
 import {
   clearAuthStorage,
-  getRefreshToken,
   getStoredUser,
   setAccessToken,
-  setRefreshToken,
   setStoredUser,
 } from "@/lib/auth/tokens";
 
@@ -40,25 +38,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function bootstrap() {
-      const refreshToken = getRefreshToken();
-      const storedUser = getStoredUser();
-
-      if (!refreshToken || !storedUser) {
-        clearAuthStorage();
-        if (!cancelled) {
-          setUser(null);
-          setStatus("unauthenticated");
-        }
-        return;
-      }
-
       try {
-        const tokens = await authApi.refresh(refreshToken);
+        const tokens = await authApi.refresh();
         if (cancelled) return;
+
         setAccessToken(tokens.accessToken);
-        setRefreshToken(tokens.refreshToken);
-        setUser(storedUser);
-        setStatus("authenticated");
+
+        const storedUser = getStoredUser();
+        if (storedUser) {
+          setUser(storedUser);
+          setStatus("authenticated");
+          return;
+        }
+
+        clearAuthStorage();
+        setUser(null);
+        setStatus("unauthenticated");
       } catch {
         clearAuthStorage();
         if (!cancelled) {
@@ -82,23 +77,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       displayName: res.displayName,
     };
     setAccessToken(res.accessToken);
-    setRefreshToken(res.refreshToken);
     setStoredUser(nextUser);
     setUser(nextUser);
     setStatus("authenticated");
   }, []);
 
-  const signup = useCallback(async (data: SignupRequest) => {
-    await authApi.signup(data);
-    await login({ username: data.username, password: data.password });
-  }, [login]);
+  const signup = useCallback(
+    async (data: SignupRequest) => {
+      await authApi.signup(data);
+      await login({ username: data.username, password: data.password });
+    },
+    [login],
+  );
 
   const logout = useCallback(async () => {
-    const refreshToken = getRefreshToken();
     try {
-      if (refreshToken) {
-        await authApi.logout(refreshToken);
-      }
+      await authApi.logout();
     } catch (err) {
       if (!(err instanceof ApiError)) {
         // ignore network errors on logout
