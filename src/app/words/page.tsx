@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/Button";
@@ -35,27 +35,33 @@ function WordsContent() {
   const [exampleSentence, setExampleSentence] = useState("");
   const [meaningOfExampleSentence, setMeaningOfExampleSentence] = useState("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getWords();
-      setWords(data);
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "단어 목록을 불러오지 못했어요.",
-      );
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+
+    getWords()
+      .then((data) => {
+        if (!cancelled) setWords(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : "단어 목록을 불러오지 못했어요.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  useEffect(() => {
     if (words.length === 0) {
-      setShowFloatFab(false);
       return;
     }
 
@@ -66,7 +72,6 @@ function WordsContent() {
       observer?.disconnect();
       const target = mq.matches ? toolbarRef.current : addBarRef.current;
       if (!target) {
-        setShowFloatFab(false);
         return;
       }
       observer = new IntersectionObserver(
