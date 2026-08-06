@@ -27,13 +27,11 @@ export type LoginResponse = {
   username: string;
   displayName: string;
   accessToken: string;
-  refreshToken: string;
   tokenType: string;
 };
 
 export type TokenResponse = {
   accessToken: string;
-  refreshToken: string;
   tokenType: string;
 };
 

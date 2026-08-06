@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +14,7 @@ import type { Word } from "@/lib/api/types";
 import { deleteWord, getWords, updateWord } from "@/lib/api/words";
 import styles from "./words.module.css";
 
-type SortOrder = "recent" | "az";
+type SortOrder = "recent" | "az" | "level";
 
 function WordsContent() {
   const router = useRouter();
@@ -35,27 +35,33 @@ function WordsContent() {
   const [exampleSentence, setExampleSentence] = useState("");
   const [meaningOfExampleSentence, setMeaningOfExampleSentence] = useState("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getWords();
-      setWords(data);
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "단어 목록을 불러오지 못했어요.",
-      );
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+
+    getWords()
+      .then((data) => {
+        if (!cancelled) setWords(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : "단어 목록을 불러오지 못했어요.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  useEffect(() => {
     if (words.length === 0) {
-      setShowFloatFab(false);
       return;
     }
 
@@ -66,7 +72,6 @@ function WordsContent() {
       observer?.disconnect();
       const target = mq.matches ? toolbarRef.current : addBarRef.current;
       if (!target) {
-        setShowFloatFab(false);
         return;
       }
       observer = new IntersectionObserver(
@@ -88,6 +93,11 @@ function WordsContent() {
     const copy = [...words];
     if (sort === "az") {
       copy.sort((a, b) => a.term.localeCompare(b.term));
+    } else if (sort === "level") {
+      copy.sort((a, b) => {
+        if (b.level !== a.level) return b.level - a.level;
+        return a.term.localeCompare(b.term);
+      });
     } else {
       copy.sort(
         (a, b) =>
@@ -165,6 +175,7 @@ function WordsContent() {
                   [
                     ["recent", "최신"],
                     ["az", "A-Z"],
+                    ["level", "레벨"],
                   ] as const
                 ).map(([value, label]) => (
                   <button

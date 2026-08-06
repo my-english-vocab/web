@@ -1,9 +1,8 @@
 import type { AuthUser } from "@/lib/api/types";
 
-const REFRESH_KEY = "mev_refresh_token";
 const USER_KEY = "mev_user";
 
-/** Access token lives in memory only (lost on full page reload until refresh). */
+/** Access token lives in memory only (lost on full page reload until cookie refresh). */
 let accessToken: string | null = null;
 
 export function getAccessToken(): string | null {
@@ -12,20 +11,6 @@ export function getAccessToken(): string | null {
 
 export function setAccessToken(token: string | null): void {
   accessToken = token;
-}
-
-export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_KEY);
-}
-
-export function setRefreshToken(token: string | null): void {
-  if (typeof window === "undefined") return;
-  if (token) {
-    localStorage.setItem(REFRESH_KEY, token);
-  } else {
-    localStorage.removeItem(REFRESH_KEY);
-  }
 }
 
 export function getStoredUser(): AuthUser | null {
@@ -50,6 +35,8 @@ export function setStoredUser(user: AuthUser | null): void {
 
 export function clearAuthStorage(): void {
   setAccessToken(null);
-  setRefreshToken(null);
   setStoredUser(null);
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("mev_refresh_token");
+  }
 }

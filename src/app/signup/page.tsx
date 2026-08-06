@@ -56,9 +56,13 @@ export default function SignupPage() {
     <PageShell showBack backHref="/login" title="회원가입">
       <div className={styles.authLayout}>
         <div className={styles.brandBlock} style={{ marginTop: 4 }}>
+          <div className={styles.brandMark}>
+            <span className={styles.brandDot} aria-hidden />
+            <span className={styles.brand}>My English Vocab</span>
+          </div>
           <h2 className={styles.headline}>시작해볼까요?</h2>
           <p className={styles.subcopy}>
-            표시 이름만 정하면 나만의 단어장을 바로 만들 수 있어요.
+            이름과 아이디를 정하고, 나만의 단어장을 시작해 보세요.
           </p>
         </div>
 
@@ -66,7 +70,7 @@ export default function SignupPage() {
           <form className={styles.form} onSubmit={handleSubmit}>
             {error ? <div className={styles.errorBanner}>{error}</div> : null}
             <TextField
-              label="표시 이름"
+              label="이름"
               name="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}

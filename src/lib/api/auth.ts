@@ -23,19 +23,18 @@ export function login(data: LoginRequest) {
   });
 }
 
-export function refresh(refreshToken: string) {
+/** Refresh Token은 httpOnly 쿠키로 자동 전송됩니다. */
+export function refresh() {
   return apiRequest<TokenResponse>("/api/auth/refresh", {
     method: "POST",
-    body: { refreshToken },
     auth: false,
     skipRefresh: true,
   });
 }
 
-export function logout(refreshToken: string) {
+export function logout() {
   return apiRequest<void>("/api/auth/logout", {
     method: "POST",
-    body: { refreshToken },
     auth: false,
     skipRefresh: true,
   });

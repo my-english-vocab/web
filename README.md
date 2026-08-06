@@ -36,5 +36,5 @@ npm run dev
 
 ## 인증 메모
 - Access Token은 메모리에만 보관합니다.
-- Refresh Token은 `localStorage`에 저장하며, Access 만료(401) 시 `/api/auth/refresh`로 재발급합니다.
-- 이상적인 httpOnly Secure 쿠키 방식은 백엔드 쿠키 연동 후 개선 예정입니다.
+- Refresh Token은 httpOnly 쿠키로 서버가 내려 주며, API 호출 시 `credentials: "include"`로 전송합니다.
+- Access 만료(401) 시 `/api/auth/refresh`로 재발급합니다.

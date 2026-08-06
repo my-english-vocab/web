@@ -1,9 +1,7 @@
 import {
   clearAuthStorage,
   getAccessToken,
-  getRefreshToken,
   setAccessToken,
-  setRefreshToken,
 } from "@/lib/auth/tokens";
 import type { ApiErrorBody, TokenResponse } from "@/lib/api/types";
 
@@ -36,14 +34,10 @@ type RequestOptions = {
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
-
   try {
     const res = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -53,7 +47,6 @@ async function refreshAccessToken(): Promise<boolean> {
 
     const data = (await res.json()) as TokenResponse;
     setAccessToken(data.accessToken);
-    setRefreshToken(data.refreshToken);
     return true;
   } catch {
     clearAuthStorage();
@@ -91,6 +84,7 @@ export async function apiRequest<T>(
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: "include",
   });
 
   if (res.status === 401 && auth && !skipRefresh) {
