@@ -14,7 +14,7 @@ import type { Word } from "@/lib/api/types";
 import { deleteWord, getWords, updateWord } from "@/lib/api/words";
 import styles from "./words.module.css";
 
-type SortOrder = "recent" | "az";
+type SortOrder = "recent" | "az" | "level";
 
 function WordsContent() {
   const router = useRouter();
@@ -88,6 +88,11 @@ function WordsContent() {
     const copy = [...words];
     if (sort === "az") {
       copy.sort((a, b) => a.term.localeCompare(b.term));
+    } else if (sort === "level") {
+      copy.sort((a, b) => {
+        if (b.level !== a.level) return b.level - a.level;
+        return a.term.localeCompare(b.term);
+      });
     } else {
       copy.sort(
         (a, b) =>
@@ -165,6 +170,7 @@ function WordsContent() {
                   [
                     ["recent", "최신"],
                     ["az", "A-Z"],
+                    ["level", "레벨"],
                   ] as const
                 ).map(([value, label]) => (
                   <button
