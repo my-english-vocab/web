@@ -5,7 +5,7 @@ Next.js(App Router) 기반 영어 단어장 웹 클라이언트입니다.
 ## Tech Stack
 - Node.js 22.23.2
 - Next.js 16.3.0 + React 19.2.4 + TypeScript
-- CSS Modules + Design Tokens (토스풍)
+- CSS Modules + Design Tokens
 - JWT Access(메모리) + Refresh(httpOnly 쿠키)
 - Vitest + React Testing Library
 
