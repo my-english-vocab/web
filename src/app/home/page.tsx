@@ -66,10 +66,16 @@ function HomeContent() {
 
       <section className={styles.welcome}>
         <p className={styles.eyebrow}>안녕하세요</p>
-        <h2 className={styles.greeting}>
-          <span className={styles.name}>{user?.displayName}</span>의{" "}
-          <br />
-          단어장
+        <h2
+          className={styles.greeting}
+          aria-label={`${user?.displayName ?? ""}의 단어장`}
+        >
+          <span className={styles.greetingOwner} aria-hidden>
+            <span className={styles.name}>{user?.displayName}</span>의
+          </span>
+          <span className={styles.greetingNoun} aria-hidden>
+            단어장
+          </span>
         </h2>
         <p className={styles.sub}>{hint}</p>
       </section>

@@ -61,11 +61,13 @@ export default function LoginPage() {
           </div>
           <h2 className={styles.headline}>다시 만나서 반가워요</h2>
           <p className={styles.subcopy}>
-            모르는 단어만 모아 두고, 여러 번 가볍게 훑어 보세요.
+            모르는 단어만 모아 두고,
+            <br className={styles.mobileOnlyBreak} /> 여러 번 가볍게 훑어
+            보세요.
           </p>
         </div>
 
-        <div className={styles.formPanel}>
+        <div className={`${styles.formPanel} ${styles.formCard}`}>
           <form className={styles.form} onSubmit={handleSubmit}>
             {error ? <div className={styles.errorBanner}>{error}</div> : null}
             <TextField

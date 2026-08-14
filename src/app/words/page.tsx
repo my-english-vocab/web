@@ -163,7 +163,12 @@ function WordsContent() {
   }
 
   return (
-    <PageShell title="나의 단어장" showBack backHref="/home">
+    <PageShell
+      title="나의 단어장"
+      showBack
+      backHref="/home"
+      showFloatingBackOnScroll
+    >
       {loading ? (
         <Spinner label="단어장을 불러오는 중..." />
       ) : (
