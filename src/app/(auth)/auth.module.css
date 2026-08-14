@@ -54,6 +54,21 @@
   flex: 1;
 }
 
+.formCard {
+  flex: initial;
+  padding: 24px 20px 20px;
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
+}
+
+.formCard .footerLink {
+  margin-top: var(--space-6);
+  padding-top: 0;
+}
+
 .form {
   display: flex;
   flex-direction: column;
@@ -92,6 +107,10 @@
 }
 
 @media (min-width: 900px) {
+  .mobileOnlyBreak {
+    display: none;
+  }
+
   .authLayout {
     display: grid;
     grid-template-columns: 1fr 1fr;

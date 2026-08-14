@@ -62,11 +62,13 @@ export default function SignupPage() {
           </div>
           <h2 className={styles.headline}>시작해볼까요?</h2>
           <p className={styles.subcopy}>
-            이름과 아이디를 정하고, 나만의 단어장을 시작해 보세요.
+            이름과 아이디를 정하고,
+            <br className={styles.mobileOnlyBreak} /> 나만의 단어장을 시작해
+            보세요.
           </p>
         </div>
 
-        <div className={styles.formPanel}>
+        <div className={`${styles.formPanel} ${styles.formCard}`}>
           <form className={styles.form} onSubmit={handleSubmit}>
             {error ? <div className={styles.errorBanner}>{error}</div> : null}
             <TextField

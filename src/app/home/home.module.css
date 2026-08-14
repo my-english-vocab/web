@@ -55,10 +55,25 @@
 }
 
 .greeting {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.25em;
   font-size: var(--text-3xl);
   font-weight: var(--font-weight-extrabold);
   line-height: 1.2;
   letter-spacing: -0.04em;
+}
+
+.greetingOwner {
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.greetingNoun {
+  white-space: nowrap;
 }
 
 .name {
@@ -248,10 +263,6 @@
 
   .welcome {
     margin-bottom: var(--space-6);
-  }
-
-  .greeting br {
-    display: none;
   }
 
   .greeting {
