@@ -4,14 +4,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/Button";
-import { IconHelp, IconPlus } from "@/components/ui/Icons";
+import { IconHelp, IconPlus, IconStar } from "@/components/ui/Icons";
 import { Modal } from "@/components/ui/Modal";
 import { PageShell } from "@/components/ui/PageShell";
 import { Spinner } from "@/components/ui/Spinner";
 import { TextField } from "@/components/ui/TextField";
 import { ApiError } from "@/lib/api/client";
 import type { Word } from "@/lib/api/types";
-import { deleteWord, getWords, updateWord } from "@/lib/api/words";
+import {
+  deleteWord,
+  getWords,
+  updateFavorite,
+  updateWord,
+} from "@/lib/api/words";
 import styles from "./words.module.css";
 
 type SortOrder = "recent" | "az" | "level";
@@ -21,10 +26,12 @@ function WordsContent() {
   const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOrder>("recent");
+  const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [selected, setSelected] = useState<Word | null>(null);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [favoriteSaving, setFavoriteSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFloatFab, setShowFloatFab] = useState(false);
   const addBarRef = useRef<HTMLDivElement | null>(null);
@@ -89,8 +96,10 @@ function WordsContent() {
     };
   }, [words.length, loading]);
 
-  const sorted = useMemo(() => {
-    const copy = [...words];
+  const visibleWords = useMemo(() => {
+    const copy = favoriteOnly
+      ? words.filter((word) => word.favorite)
+      : [...words];
     if (sort === "az") {
       copy.sort((a, b) => a.term.localeCompare(b.term));
     } else if (sort === "level") {
@@ -105,7 +114,7 @@ function WordsContent() {
       );
     }
     return copy;
-  }, [words, sort]);
+  }, [favoriteOnly, words, sort]);
 
   function openWord(word: Word) {
     setSelected(word);
@@ -162,6 +171,28 @@ function WordsContent() {
     }
   }
 
+  async function handleFavoriteToggle() {
+    if (!selected || favoriteSaving) return;
+
+    setFavoriteSaving(true);
+    setError(null);
+    try {
+      const updated = await updateFavorite(selected.id, !selected.favorite);
+      setWords((prev) =>
+        prev.map((word) => (word.id === updated.id ? updated : word)),
+      );
+      setSelected(updated);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "즐겨찾기 변경에 실패했어요.",
+      );
+    } finally {
+      setFavoriteSaving(false);
+    }
+  }
+
   return (
     <PageShell
       title="나의 단어장"
@@ -192,9 +223,19 @@ function WordsContent() {
                     {label}
                   </button>
                 ))}
+                <span className={styles.sortDivider} aria-hidden />
+                <button
+                  type="button"
+                  className={`${styles.sortButton} ${styles.favoriteFilter} ${favoriteOnly ? styles.favoriteFilterActive : ""}`}
+                  aria-pressed={favoriteOnly}
+                  onClick={() => setFavoriteOnly((current) => !current)}
+                >
+                  <IconStar size={14} filled={favoriteOnly} />
+                  즐겨찾기
+                </button>
               </div>
               <div className={styles.toolbarRight}>
-                <span className={styles.count}>{words.length}개</span>
+                <span className={styles.count}>{visibleWords.length}개</span>
                 <div className={styles.toolbarAdd}>
                   <Button
                     size="sm"
@@ -221,15 +262,26 @@ function WordsContent() {
                 </Button>
               </div>
             </div>
+          ) : visibleWords.length === 0 ? (
+            <div className={styles.filteredEmpty}>
+              <div className={styles.filteredEmptyIcon} aria-hidden>
+                <IconStar size={24} />
+              </div>
+              <p className={styles.filteredEmptyTitle}>
+                즐겨찾기한 단어가 없어요
+              </p>
+              <p>단어 상세에서 별을 눌러 추가해 보세요.</p>
+            </div>
           ) : (
             <ul className={styles.list}>
-              {sorted.map((word) => (
+              {visibleWords.map((word, index) => (
                 <li key={word.id}>
                   <button
                     type="button"
                     className={styles.row}
                     onClick={() => openWord(word)}
                   >
+                    <span className={styles.index}>{index + 1}</span>
                     <span className={styles.term}>{word.term}</span>
                     <span className={styles.definition}>{word.definition}</span>
                     <span
@@ -267,7 +319,29 @@ function WordsContent() {
 
       <Modal
         open={!!selected && !confirmDelete}
-        title={editing ? "단어 수정" : (selected?.term ?? "")}
+        title={
+          editing ? (
+            "단어 수정"
+          ) : selected ? (
+            <span className={styles.detailTitle}>
+              <button
+                type="button"
+                className={`${styles.favoriteButton} ${selected.favorite ? styles.favoriteButtonActive : ""}`}
+                aria-label={
+                  selected.favorite ? "즐겨찾기 해제" : "즐겨찾기 추가"
+                }
+                aria-pressed={selected.favorite}
+                disabled={favoriteSaving}
+                onClick={() => void handleFavoriteToggle()}
+              >
+                <IconStar size={25} filled={selected.favorite} />
+              </button>
+              <span>{selected.term}</span>
+            </span>
+          ) : (
+            ""
+          )
+        }
         onClose={closeModal}
         footer={
           editing ? (

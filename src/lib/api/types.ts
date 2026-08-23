@@ -46,6 +46,7 @@ export type Word = {
   term: string;
   definition: string;
   level: number;
+  favorite: boolean;
   exampleSentence: string | null;
   meaningOfExampleSentence: string | null;
   createdAt: string;
