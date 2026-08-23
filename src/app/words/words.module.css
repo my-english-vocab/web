@@ -87,7 +87,7 @@
   padding: 16px 18px;
   box-shadow: var(--shadow-card);
   display: grid;
-  grid-template-columns: 22px minmax(82px, 30%) minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(104px, 33%) minmax(0, 1fr) auto;
   column-gap: 12px;
   align-items: center;
   transition:
@@ -101,6 +101,7 @@
   font-weight: var(--font-weight-semibold);
   font-variant-numeric: tabular-nums;
   text-align: right;
+  transform: translateX(-14px);
 }
 
 .row:hover {
