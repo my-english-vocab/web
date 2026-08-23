@@ -35,6 +35,13 @@ export function markLearned(id: number) {
   });
 }
 
+export function updateFavorite(id: number, favorite: boolean) {
+  return apiRequest<Word>(`/api/words/${id}/favorite`, {
+    method: "PATCH",
+    body: { favorite },
+  });
+}
+
 export function generateExample(term: string, definition?: string) {
   return apiRequest<
     import("@/lib/api/types").GenerateExampleResponse

@@ -113,6 +113,31 @@ export function IconHelp({ size = 22, className }: IconProps) {
   );
 }
 
+export function IconStar({
+  size = 22,
+  className,
+  filled = false,
+}: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="m12 3.35 2.66 5.39 5.95.86-4.3 4.2 1.02 5.92L12 16.92l-5.33 2.8 1.02-5.92-4.3-4.2 5.95-.86L12 3.35Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconEye({ size = 22, className }: IconProps) {
   return (
     <svg

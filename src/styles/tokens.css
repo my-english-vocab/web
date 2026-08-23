@@ -23,6 +23,9 @@
   --color-danger-soft: #fff1f1;
   --color-success: #00a881;
   --color-success-soft: #e8faf4;
+  --color-favorite: #f5a623;
+  --color-favorite-strong: #9a6700;
+  --color-favorite-soft: #fff4cc;
 
   /* Elevation — soft, almost borderless */
   --shadow-card: 0 2px 8px rgba(25, 31, 40, 0.04),

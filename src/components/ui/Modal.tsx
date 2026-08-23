@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useId, type ReactNode } from "react";
 import styles from "./Modal.module.css";
 
 type ModalProps = {
   open: boolean;
-  title: string;
+  title: ReactNode;
   onClose: () => void;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
+  children: ReactNode;
+  footer?: ReactNode;
 };
 
 export function Modal({ open, title, onClose, children, footer }: ModalProps) {
+  const titleId = useId();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -29,12 +31,14 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
         className={styles.panel}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.handle} aria-hidden />
         <div className={styles.header}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 id={titleId} className={styles.title}>
+            {title}
+          </h2>
           <button
             type="button"
             className={styles.close}
