@@ -1,114 +1,72 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/Button";
-import { IconPartyPopper } from "@/components/ui/Icons";
+import { IconCheckCircle } from "@/components/ui/Icons";
 import { PageShell } from "@/components/ui/PageShell";
 import { Spinner } from "@/components/ui/Spinner";
 import { ApiError } from "@/lib/api/client";
-import type { Word } from "@/lib/api/types";
-import { getWords, markLearned } from "@/lib/api/words";
+import { getQuizSetAttemptSummaries } from "@/lib/api/quiz";
+import type { QuizSetAttemptSummary, Word } from "@/lib/api/types";
+import { getWords } from "@/lib/api/words";
+import { createQuizSets } from "@/lib/quiz/sets";
 import styles from "./quiz.module.css";
 
-function shuffleArray<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function QuizContent() {
+function QuizSelectionContent() {
   const router = useRouter();
   const [words, setWords] = useState<Word[]>([]);
+  const [attempts, setAttempts] = useState<QuizSetAttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showDefinition, setShowDefinition] = useState(false);
+  const [attemptsUnavailable, setAttemptsUnavailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [learnedCount, setLearnedCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    getWords()
-      .then((data) => {
-        if (!cancelled) {
-          setWords(shuffleArray(data));
-          setLoading(false);
-        }
+
+    Promise.all([
+      getWords(),
+      getQuizSetAttemptSummaries().catch(() => {
+        if (!cancelled) setAttemptsUnavailable(true);
+        return [];
+      }),
+    ])
+      .then(([wordData, attemptData]) => {
+        if (cancelled) return;
+        setWords(wordData);
+        setAttempts(attemptData);
+        setLoading(false);
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : "단어를 불러오지 못했어요.",
-          );
-          setLoading(false);
-        }
+        if (cancelled) return;
+        setError(
+          err instanceof ApiError ? err.message : "단어를 불러오지 못했어요.",
+        );
+        setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const finished = !loading && words.length > 0 && currentIndex >= words.length;
-  const currentWord = words[currentIndex];
-
-  const goNext = useCallback(() => {
-    setShowDefinition(false);
-    setCurrentIndex((prev) => prev + 1);
-  }, []);
-
-  const handleMarkLearned = useCallback(async () => {
-    if (!currentWord || busy) return;
-    setBusy(true);
-    try {
-      await markLearned(currentWord.id);
-      setLearnedCount((prev) => prev + 1);
-    } catch {
-      // level update failure should not block quiz flow
-    } finally {
-      setBusy(false);
-      goNext();
-    }
-  }, [busy, currentWord, goNext]);
-
-  useEffect(() => {
-    if (loading || finished || !currentWord) return;
-
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight" || event.key === "Enter") {
-        if (showDefinition) {
-          if (event.key === "Enter") {
-            void handleMarkLearned();
-          } else {
-            goNext();
-          }
-        } else {
-          setShowDefinition(true);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [
-    loading,
-    finished,
-    currentWord,
-    showDefinition,
-    goNext,
-    handleMarkLearned,
-  ]);
+  const quizSets = useMemo(() => createQuizSets(words), [words]);
+  const attemptCountBySet = useMemo(
+    () =>
+      new Map(
+        attempts.map((attempt) => [
+          attempt.setNumber,
+          attempt.completedCount,
+        ]),
+      ),
+    [attempts],
+  );
 
   if (loading) {
     return (
       <PageShell title="단어 테스트" showBack backHref="/home">
-        <Spinner label="퀴즈를 준비하는 중..." />
+        <Spinner label="퀴즈 목록을 준비하는 중..." />
       </PageShell>
     );
   }
@@ -137,113 +95,93 @@ function QuizContent() {
     );
   }
 
-  if (finished) {
-    return (
-      <PageShell title="테스트 결과" showBack backHref="/home">
-        <div className={styles.result}>
-          <div className={styles.resultBadge} aria-hidden>
-            <IconPartyPopper size={40} />
-          </div>
-          <h2 className={styles.resultTitle}>정말 멋져요!</h2>
-          <p className={styles.resultDesc}>
-            <span className={styles.highlight}>{words.length}개</span>를
-            확인했고, 그중{" "}
-            <span className={styles.highlight}>{learnedCount}개</span>는
-            ‘외웠어요’로 레벨이 올랐어요.
-          </p>
-          <div className={styles.resultStats}>
-            <div className={styles.statChip}>
-              <span className={styles.statChipLabel}>확인</span>
-              <span className={styles.statChipValue}>{words.length}</span>
-            </div>
-            <div className={styles.statChip}>
-              <span className={styles.statChipLabel}>외움</span>
-              <span className={styles.statChipValue}>{learnedCount}</span>
-            </div>
-          </div>
-          <div className={styles.resultActions}>
-            <Button onClick={() => router.replace("/home")}>홈으로</Button>
-            <Button variant="ghost" onClick={() => router.push("/words")}>
-              단어장 보기
-            </Button>
-          </div>
-        </div>
-      </PageShell>
-    );
-  }
-
-  const progress = ((currentIndex + 1) / words.length) * 100;
-
   return (
     <PageShell title="단어 테스트" showBack backHref="/home">
-      <div className={styles.quizLayout}>
-        <div className={styles.progressTrack}>
-          <div
-            className={styles.progressBar}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+      <div className={styles.selectionLayout}>
+        <section className={styles.selectionIntro}>
+          <p className={styles.selectionEyebrow}>오늘은 어떤 방식으로 복습할까요?</p>
+          <h2 className={styles.selectionTitle}>퀴즈를 선택해 주세요</h2>
+          <p className={styles.selectionDesc}>
+            세트는 등록 순서대로 묶고, 문제는 매번 무작위로 나와요.
+          </p>
+        </section>
 
-        <div className={styles.info}>
-          <span>
-            {currentIndex + 1} / {words.length}
+        <button
+          type="button"
+          className={styles.randomCard}
+          onClick={() => router.push("/quiz/session/all")}
+        >
+          <span className={styles.randomIcon} aria-hidden>
+            <IconCheckCircle size={26} />
           </span>
-          <span
-            className={styles.badge}
-            title="퀴즈에서 ‘외웠어요’를 누르면 올라가요"
-          >
-            Lv.{currentWord.level}
+          <span className={styles.randomCopy}>
+            <span className={styles.randomLabel}>전체 복습</span>
+            <span className={styles.randomTitle}>전체 랜덤 퀴즈</span>
+            <span className={styles.randomDesc}>
+              저장한 {words.length}개 단어를 한 번에 무작위로 풀어요
+            </span>
           </span>
-        </div>
+          <span className={styles.cardChevron} aria-hidden>
+            ›
+          </span>
+        </button>
 
-        <div className={styles.card}>
-          <h2 className={styles.term}>{currentWord.term}</h2>
-          <div className={styles.section}>
-            <span className={styles.label}>예문</span>
-            <p className={styles.example}>
-              {currentWord.exampleSentence || "예문이 없어요."}
-            </p>
+        <section className={styles.setSection}>
+          <div className={styles.setSectionHeader}>
+            <div>
+              <p className={styles.setSectionEyebrow}>부담 없이 나눠서</p>
+              <h3 className={styles.setSectionTitle}>세트별 퀴즈</h3>
+            </div>
+            <span className={styles.setCount}>{quizSets.length}개 세트</span>
           </div>
 
-          {showDefinition ? (
-            <div className={styles.reveal}>
-              <span className={styles.label}>뜻</span>
-              <p className={styles.definition}>{currentWord.definition}</p>
-              {currentWord.meaningOfExampleSentence ? (
-                <div className={styles.meaning}>
-                  <span className={styles.label}>예문 해석</span>
-                  <p className={styles.meaningText}>
-                    {currentWord.meaningOfExampleSentence}
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <p className={styles.hiddenHint}>
-              뜻을 떠올려 본 뒤, 아래에서 확인해 보세요
+          {attemptsUnavailable ? (
+            <p className={styles.attemptWarning} role="status">
+              완료 횟수를 불러오지 못했지만 퀴즈는 정상적으로 풀 수 있어요.
             </p>
-          )}
-        </div>
+          ) : null}
 
-        <div className={styles.footer}>
-          {showDefinition ? (
-            <>
-              <Button variant="secondary" onClick={goNext} disabled={busy}>
-                모르겠어요
-              </Button>
-              <Button onClick={handleMarkLearned} disabled={busy}>
-                외웠어요
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="secondary" onClick={goNext}>
-                넘기기
-              </Button>
-              <Button onClick={() => setShowDefinition(true)}>뜻 보기</Button>
-            </>
-          )}
-        </div>
+          <div className={styles.setGrid}>
+            {quizSets.map((quizSet) => {
+              const completedCount = attemptCountBySet.get(quizSet.number) ?? 0;
+              return (
+                <button
+                  type="button"
+                  className={styles.setCard}
+                  key={quizSet.number}
+                  onClick={() =>
+                    router.push(`/quiz/session/${quizSet.number}`)
+                  }
+                  aria-label={`Set ${quizSet.number}, 단어 ${quizSet.start}번부터 ${quizSet.end}번, 완료 ${completedCount}회`}
+                >
+                  <span className={styles.setCardTop}>
+                    <span className={styles.setNumber}>Set {quizSet.number}</span>
+                    <span className={styles.setWordCount}>
+                      {quizSet.words.length}개
+                    </span>
+                  </span>
+                  <span className={styles.setRange}>
+                    단어 {quizSet.start}–{quizSet.end}
+                  </span>
+                  <span className={styles.setMeta}>
+                    <span
+                      className={
+                        completedCount > 0
+                          ? styles.completedBadge
+                          : styles.notStartedBadge
+                      }
+                    >
+                      완료 {completedCount}회
+                    </span>
+                    <span className={styles.miniChevron} aria-hidden>
+                      ›
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </PageShell>
   );
@@ -252,7 +190,7 @@ function QuizContent() {
 export default function QuizPage() {
   return (
     <AuthGuard>
-      <QuizContent />
+      <QuizSelectionContent />
     </AuthGuard>
   );
 }

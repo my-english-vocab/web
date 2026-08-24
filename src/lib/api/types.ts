@@ -75,3 +75,15 @@ export type AiUsageResponse = {
   used: number;
   remaining: number;
 };
+
+export type QuizSetAttemptSummary = {
+  setNumber: number;
+  completedCount: number;
+  lastCompletedAt: string;
+};
+
+export type CompleteQuizSetAttemptInput = {
+  attemptId: string;
+  wordCount: number;
+  learnedCount: number;
+};
