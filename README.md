@@ -52,14 +52,24 @@ Vercel의 `NEXT_PUBLIC_API_BASE_URL`에는 `https://api.myenglishvocab.com`을 �
 | `/home` | `{displayName}의 단어장` 홈 |
 | `/words` | 단어 목록 · 순번/정렬/즐겨찾기 필터 · 상세에서 즐겨찾기/수정/삭제 · 스크롤 시 플로팅 뒤로가기 |
 | `/words/add` | AI 예문 초안 → 확인 후 저장 |
-| `/quiz` | 뜻 가리기 퀴즈 · mark-learned |
+| `/quiz` | 전체 랜덤 또는 등록 순서 기준 20개 단위 세트 퀴즈 · 완료 횟수 · mark-learned |
+| `/admin` | `ADMIN` 전용 운영 통계 대시보드 |
 
 ## 인증 메모
 - Access Token은 메모리에만 보관합니다.
 - Refresh Token은 httpOnly 쿠키로 서버가 내려 주며, API 호출 시 `credentials: "include"`로 전송합니다.
 - Access 만료(401) 시 `/api/auth/refresh`로 재발급합니다.
 - Refresh Token은 JavaScript와 `localStorage`에서 읽지 않습니다.
-- 로그인 사용자 정보(아이디·표시 이름)는 화면 상태 복구를 위해 `localStorage`에 저장합니다.
+- 로그인 사용자 정보(아이디·표시 이름·역할)는 화면 상태 복구를 위해 `localStorage`에 저장합니다.
+- 앱 시작 시 Refresh Token으로 Access Token을 재발급한 뒤 `/api/auth/me`에서 현재 역할을 다시 확인합니다.
+- `/admin`의 화면 가드는 사용자 경험을 위한 장치이며, 실제 권한 경계는 백엔드의 `ADMIN` 검사입니다.
+
+## 운영 통계 연동
+
+- 로그인 사용자가 화면을 이동하면 `POST /api/analytics/page-view`로 경로를 기록합니다.
+- 쿼리 문자열, 단어·뜻과 폼 입력값은 전송하지 않습니다.
+- 관리자 대시보드는 요약·일별·월별·인기 단어·인기 페이지·사용자·가입/탈퇴 API를 함께 조회합니다.
+- 일반 사용자가 `/admin`에 직접 접근하면 `/home`으로 돌아갑니다.
 
 ## 테스트와 품질 검사
 
@@ -78,10 +88,10 @@ npm run build
 ```
 
 - Vitest: API Client의 인증 헤더, 쿠키 전송, 204 처리, 오류 변환, 401 재발급·재시도를 검증합니다.
-- React Testing Library: `AuthProvider`의 인증 흐름과 단어 목록의 정렬별 순번, 즐겨찾기 필터·토글을 사용자가 관찰하는 화면 상태 기준으로 검증합니다.
+- React Testing Library: `AuthProvider`의 인증·역할 동기화, 페이지 방문 기록, 관리자 접근 제어·통계 화면과 단어 목록의 정렬·즐겨찾기를 검증합니다.
 - GitHub Actions는 `main` push와 Pull Request에서 `npm ci → lint → test:run → build`를 실행합니다. npm 및 Next.js 빌드 캐시를 사용합니다.
 
-운영 환경에서 로그인, 새로고침 후 로그인 복구, 단어 CRUD, 즐겨찾기 필터·토글, AI 생성과 퀴즈를 수동 Smoke Test로 확인했습니다. 다만 이 브라우저 흐름을 자동으로 반복하는 Playwright E2E 테스트는 아직 없습니다. 이후 API mock 또는 테스트용 백엔드를 사용하는 E2E로 보강할 수 있습니다.
+운영 환경에서 로그인, 새로고침 후 로그인 복구, 단어 CRUD, 즐겨찾기 필터·토글, AI 생성과 퀴즈를 수동 Smoke Test로 확인했습니다. 관리자 대시보드는 로컬 실제 API 연동과 데스크톱·모바일 화면을 확인했으며, 운영에서는 관리자 계정으로 별도 접근 확인이 필요합니다. 이 브라우저 흐름을 자동으로 반복하는 Playwright E2E 테스트는 아직 없습니다.
 
 ## 배포 시 인증 확인
 
