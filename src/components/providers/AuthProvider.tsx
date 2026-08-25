@@ -46,7 +46,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const storedUser = getStoredUser();
         if (storedUser) {
-          setUser(storedUser);
+          const principal = await authApi.me();
+          if (cancelled) return;
+
+          const currentUser: AuthUser = {
+            ...storedUser,
+            userId: principal.userId,
+            username: principal.username,
+            role: principal.role,
+          };
+          setStoredUser(currentUser);
+          setUser(currentUser);
           setStatus("authenticated");
           return;
         }
@@ -75,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userId: res.userId,
       username: res.username,
       displayName: res.displayName,
+      role: res.role,
     };
     setAccessToken(res.accessToken);
     setStoredUser(nextUser);
