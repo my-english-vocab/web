@@ -35,6 +35,15 @@ NEXT_PUBLIC_API_BASE_URL=https://api.example.com
 
 이 값은 브라우저에 공개되는 API 주소이며 비밀값을 넣으면 안 됩니다.
 
+## 운영 배포
+
+- 프론트엔드: Vercel — [https://app.myenglishvocab.com](https://app.myenglishvocab.com)
+- 백엔드 API: AWS EC2 — [https://api.myenglishvocab.com](https://api.myenglishvocab.com)
+- GitHub Actions: `main` push와 Pull Request에서 lint, test, build 실행
+- Vercel: `main`에 반영된 프론트엔드를 자동 배포
+
+Vercel의 `NEXT_PUBLIC_API_BASE_URL`에는 `https://api.myenglishvocab.com`을 설정합니다. 이 변수에는 Token, Cookie, API Key 같은 비밀값을 넣지 않습니다.
+
 ## 화면
 | 경로 | 설명 |
 |------|------|
@@ -72,10 +81,10 @@ npm run build
 - React Testing Library: `AuthProvider`의 인증 흐름과 단어 목록의 정렬별 순번, 즐겨찾기 필터·토글을 사용자가 관찰하는 화면 상태 기준으로 검증합니다.
 - GitHub Actions는 `main` push와 Pull Request에서 `npm ci → lint → test:run → build`를 실행합니다. npm 및 Next.js 빌드 캐시를 사용합니다.
 
-아직 실제 브라우저 E2E, 단어 CRUD/퀴즈 화면의 사용자 흐름, 실제 백엔드와 쿠키 속성의 통합 동작은 테스트하지 않습니다. 이 범위는 배포 환경이 정해진 뒤 API mock 기반 Playwright E2E와 백엔드 통합 테스트로 보강할 수 있습니다.
+운영 환경에서 로그인, 새로고침 후 로그인 복구, 단어 CRUD, 즐겨찾기 필터·토글, AI 생성과 퀴즈를 수동 Smoke Test로 확인했습니다. 다만 이 브라우저 흐름을 자동으로 반복하는 Playwright E2E 테스트는 아직 없습니다. 이후 API mock 또는 테스트용 백엔드를 사용하는 E2E로 보강할 수 있습니다.
 
 ## 배포 시 인증 확인
 
-Refresh Token은 `SameSite=Lax; HttpOnly` 쿠키를 사용합니다. 배포 환경에서는 HTTPS를 전제로 `AUTH_COOKIE_SECURE=true`를 설정해 `Secure` 속성을 반드시 활성화해야 합니다. 프론트와 API는 `app.example.com`, `api.example.com`처럼 같은 최상위 도메인의 HTTPS 주소를 사용하는 구성을 권장합니다.
+Refresh Token은 `SameSite=Lax; HttpOnly` 쿠키를 사용합니다. 백엔드는 `prod` 프로필의 `application-prod.yaml`에서 `auth.cookie.secure=true`를 강제하므로 프론트엔드나 `.env.production`에 `AUTH_COOKIE_SECURE`를 따로 설정하지 않습니다. 현재 프론트와 API는 `app.myenglishvocab.com`, `api.myenglishvocab.com`처럼 같은 최상위 도메인의 HTTPS 주소를 사용합니다.
 
 배포 후에는 로그인 직후만 확인하지 말고, 페이지를 새로고침해도 로그인 상태가 복구되는지 반드시 확인합니다. 이 과정에서 API 주소, HTTPS, CORS와 Refresh Cookie 설정을 함께 검증할 수 있습니다.
