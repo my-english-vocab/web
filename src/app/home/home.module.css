@@ -223,6 +223,11 @@
   color: var(--color-success);
 }
 
+.iconWellIndigo {
+  background: #f1edff;
+  color: #7253d6;
+}
+
 .menuTitle {
   display: block;
   font-size: var(--text-lg);

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { PageViewTracker } from "@/components/providers/PageViewTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,7 +30,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Suspense fallback={null}>
+            <PageViewTracker />
+          </Suspense>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

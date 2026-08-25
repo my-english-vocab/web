@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { IconBook, IconCheckCircle } from "@/components/ui/Icons";
+import { IconBook, IconChart, IconCheckCircle } from "@/components/ui/Icons";
 import { PageShell } from "@/components/ui/PageShell";
 import { getWords } from "@/lib/api/words";
 import styles from "./home.module.css";
@@ -147,6 +147,27 @@ function HomeContent() {
             </span>
             <span className={styles.chevron}>›</span>
           </button>
+          {user?.role === "ADMIN" ? (
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => router.push("/admin")}
+            >
+              <span
+                className={`${styles.iconWell} ${styles.iconWellIndigo}`}
+                aria-hidden
+              >
+                <IconChart size={24} />
+              </span>
+              <span>
+                <span className={styles.menuTitle}>운영 대시보드</span>
+                <span className={styles.menuDesc}>
+                  사용자 · 활동 · 서비스 통계
+                </span>
+              </span>
+              <span className={styles.chevron}>›</span>
+            </button>
+          ) : null}
         </nav>
       </div>
     </PageShell>

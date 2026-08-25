@@ -11,6 +11,7 @@ import {
 
 vi.mock("@/lib/api/auth", () => ({
   refresh: vi.fn(),
+  me: vi.fn(),
   login: vi.fn(),
   signup: vi.fn(),
   logout: vi.fn(),
@@ -54,7 +55,12 @@ function renderProvider() {
 }
 
 describe("AuthProvider", () => {
-  const user = { userId: 1, username: "learner", displayName: "학습자" };
+  const user = {
+    userId: 1,
+    username: "learner",
+    displayName: "학습자",
+    role: "USER" as const,
+  };
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -67,6 +73,11 @@ describe("AuthProvider", () => {
       accessToken: "restored-token",
       tokenType: "Bearer",
     });
+    vi.mocked(authApi.me).mockResolvedValue({
+      userId: user.userId,
+      username: user.username,
+      role: "ADMIN",
+    });
 
     renderProvider();
 
@@ -75,7 +86,9 @@ describe("AuthProvider", () => {
     );
     expect(screen.getByTestId("user")).toHaveTextContent("학습자");
     expect(authApi.refresh).toHaveBeenCalledTimes(1);
+    expect(authApi.me).toHaveBeenCalledTimes(1);
     expect(getAccessToken()).toBe("restored-token");
+    expect(getStoredUser()?.role).toBe("ADMIN");
   });
 
   it("becomes unauthenticated when startup refresh fails", async () => {
@@ -126,6 +139,7 @@ describe("AuthProvider", () => {
       userId: 1,
       username: "new-user",
       displayName: "새 사용자",
+      role: "USER",
       accessToken: "signup-token",
       tokenType: "Bearer",
     });
@@ -156,6 +170,11 @@ describe("AuthProvider", () => {
     vi.mocked(authApi.refresh).mockResolvedValue({
       accessToken: "restored-token",
       tokenType: "Bearer",
+    });
+    vi.mocked(authApi.me).mockResolvedValue({
+      userId: user.userId,
+      username: user.username,
+      role: user.role,
     });
     vi.mocked(authApi.logout).mockResolvedValue(undefined);
     renderProvider();

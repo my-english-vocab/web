@@ -1,5 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
 import type {
+  AuthPrincipal,
   LoginRequest,
   LoginResponse,
   SignupRequest,
@@ -30,6 +31,10 @@ export function refresh() {
     auth: false,
     skipRefresh: true,
   });
+}
+
+export function me() {
+  return apiRequest<AuthPrincipal>("/api/auth/me");
 }
 
 export function logout() {

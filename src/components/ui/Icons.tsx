@@ -65,6 +65,32 @@ export function IconCheckCircle({ size = 22, className }: IconProps) {
   );
 }
 
+export function IconChart({ size = 22, className }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M5 19V10.5M12 19V5M19 19v-6.5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M3.5 19.25h17"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconPlus({ size = 22, className }: IconProps) {
   return (
     <svg
