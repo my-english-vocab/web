@@ -13,8 +13,18 @@ export type QuizSet = {
 export function createQuizSets(words: Word[]): QuizSet[] {
   if (words.length === 0) return [];
 
-  const fullSetCount = Math.floor(words.length / DEFAULT_QUIZ_SET_SIZE);
-  const remainder = words.length % DEFAULT_QUIZ_SET_SIZE;
+  const orderedWords = [...words].sort((first, second) => {
+    const createdAtDifference =
+      new Date(first.createdAt).getTime() -
+      new Date(second.createdAt).getTime();
+
+    return createdAtDifference || first.id - second.id;
+  });
+
+  const fullSetCount = Math.floor(
+    orderedWords.length / DEFAULT_QUIZ_SET_SIZE,
+  );
+  const remainder = orderedWords.length % DEFAULT_QUIZ_SET_SIZE;
   const shouldMergeLast =
     fullSetCount > 0 &&
     remainder > 0 &&
@@ -22,19 +32,19 @@ export function createQuizSets(words: Word[]): QuizSet[] {
   const sets: QuizSet[] = [];
   let cursor = 0;
 
-  while (cursor < words.length) {
+  while (cursor < orderedWords.length) {
     const isMergedLastSet =
       shouldMergeLast &&
       cursor === (fullSetCount - 1) * DEFAULT_QUIZ_SET_SIZE;
     const endExclusive = isMergedLastSet
-      ? words.length
-      : Math.min(cursor + DEFAULT_QUIZ_SET_SIZE, words.length);
+      ? orderedWords.length
+      : Math.min(cursor + DEFAULT_QUIZ_SET_SIZE, orderedWords.length);
 
     sets.push({
       number: sets.length + 1,
       start: cursor + 1,
       end: endExclusive,
-      words: words.slice(cursor, endExclusive),
+      words: orderedWords.slice(cursor, endExclusive),
     });
     cursor = endExclusive;
   }
