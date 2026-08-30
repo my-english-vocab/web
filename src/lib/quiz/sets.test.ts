@@ -43,4 +43,42 @@ describe("createQuizSets", () => {
       { number: 2, start: 21, end: 50 },
     ]);
   });
+
+  it("groups words from oldest to newest regardless of API response order", () => {
+    const latestFirst = words(31).reverse();
+
+    const sets = createQuizSets(latestFirst);
+
+    expect(sets.flatMap((set) => set.words).map((word) => word.id)).toEqual(
+      Array.from({ length: 31 }, (_, index) => index + 1),
+    );
+    expect(latestFirst.map((word) => word.id)).toEqual(
+      Array.from({ length: 31 }, (_, index) => 31 - index),
+    );
+  });
+
+  it("places a newly added word at the end of the last set", () => {
+    const existingWords = words(31);
+    const newWord: Word = {
+      ...existingWords[0],
+      id: 32,
+      term: "new-word",
+      createdAt: "2026-08-25T00:00:00Z",
+    };
+
+    const sets = createQuizSets([newWord, ...existingWords].reverse());
+
+    expect(sets.map((set) => set.words.length)).toEqual([20, 12]);
+    expect(sets.at(-1)?.words.at(-1)?.id).toBe(newWord.id);
+  });
+
+  it("uses the word id as a stable order when creation times are equal", () => {
+    const sameTimeWords = words(3)
+      .map((word) => ({ ...word, createdAt: "2026-08-24T00:00:00Z" }))
+      .reverse();
+
+    const sets = createQuizSets(sameTimeWords);
+
+    expect(sets[0].words.map((word) => word.id)).toEqual([1, 2, 3]);
+  });
 });
