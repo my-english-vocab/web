@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as authApi from "@/lib/api/auth";
 import { AuthProvider, useAuth } from "@/components/providers/AuthProvider";
+import { dismissOnboarding, readSession } from "@/lib/onboarding/session";
 import {
   clearAuthStorage,
   getAccessToken,
@@ -14,11 +15,21 @@ vi.mock("@/lib/api/auth", () => ({
   me: vi.fn(),
   login: vi.fn(),
   signup: vi.fn(),
+  updateProfile: vi.fn(),
+  withdraw: vi.fn(),
   logout: vi.fn(),
 }));
 
 function AuthControls() {
-  const { status, user, login, signup, logout } = useAuth();
+  const {
+    status,
+    user,
+    login,
+    signup,
+    updateDisplayName,
+    withdrawAccount,
+    logout,
+  } = useAuth();
   return (
     <div>
       <output data-testid="status">{status}</output>
@@ -42,6 +53,8 @@ function AuthControls() {
         signup
       </button>
       <button onClick={() => void logout()}>logout</button>
+      <button onClick={() => void updateDisplayName("새 이름")}>rename</button>
+      <button onClick={() => void withdrawAccount("pass1234")}>withdraw</button>
     </div>
   );
 }
@@ -104,6 +117,7 @@ describe("AuthProvider", () => {
   });
 
   it("stores access token and user information after login", async () => {
+    dismissOnboarding(user.userId);
     vi.mocked(authApi.refresh).mockRejectedValue(new Error("no cookie"));
     vi.mocked(authApi.login).mockResolvedValue({
       ...user,
@@ -125,6 +139,7 @@ describe("AuthProvider", () => {
       password: "pass1234",
     });
     expect(getAccessToken()).toBe("login-token");
+    expect(readSession(user.userId, "checked")).toBeNull();
     expect(getStoredUser()).toEqual(user);
   });
 
@@ -189,6 +204,55 @@ describe("AuthProvider", () => {
     );
     expect(authApi.logout).toHaveBeenCalledTimes(1);
     expect(getAccessToken()).toBeNull();
+    expect(getStoredUser()).toBeNull();
+  });
+
+  it("updates the display name in context and local storage", async () => {
+    setStoredUser(user);
+    vi.mocked(authApi.refresh).mockResolvedValue({
+      accessToken: "restored-token",
+      tokenType: "Bearer",
+    });
+    vi.mocked(authApi.me).mockResolvedValue({
+      userId: user.userId,
+      username: user.username,
+      role: user.role,
+    });
+    vi.mocked(authApi.updateProfile).mockResolvedValue({
+      userId: user.userId,
+      username: user.username,
+      displayName: "새 이름",
+    });
+    renderProvider();
+    await screen.findByText("학습자");
+
+    fireEvent.click(screen.getByRole("button", { name: "rename" }));
+
+    await screen.findByText("새 이름");
+    expect(getStoredUser()?.displayName).toBe("새 이름");
+  });
+
+  it("clears authentication after account withdrawal", async () => {
+    setStoredUser(user);
+    vi.mocked(authApi.refresh).mockResolvedValue({
+      accessToken: "restored-token",
+      tokenType: "Bearer",
+    });
+    vi.mocked(authApi.me).mockResolvedValue({
+      userId: user.userId,
+      username: user.username,
+      role: user.role,
+    });
+    vi.mocked(authApi.withdraw).mockResolvedValue(undefined);
+    renderProvider();
+    await screen.findByText("학습자");
+
+    fireEvent.click(screen.getByRole("button", { name: "withdraw" }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("status")).toHaveTextContent("unauthenticated"),
+    );
+    expect(authApi.withdraw).toHaveBeenCalledWith("pass1234");
     expect(getStoredUser()).toBeNull();
   });
 });

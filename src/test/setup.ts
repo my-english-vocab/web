@@ -20,4 +20,5 @@ globalThis.IntersectionObserver = IntersectionObserverMock;
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
 });

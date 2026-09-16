@@ -3,6 +3,7 @@ import type {
   AuthPrincipal,
   LoginRequest,
   LoginResponse,
+  ProfileResponse,
   SignupRequest,
   SignupResponse,
   TokenResponse,
@@ -35,6 +36,20 @@ export function refresh() {
 
 export function me() {
   return apiRequest<AuthPrincipal>("/api/auth/me");
+}
+
+export function updateProfile(displayName: string) {
+  return apiRequest<ProfileResponse>("/api/auth/me", {
+    method: "PATCH",
+    body: { displayName },
+  });
+}
+
+export function withdraw(password: string) {
+  return apiRequest<void>("/api/auth/withdraw", {
+    method: "POST",
+    body: { password },
+  });
 }
 
 export function logout() {

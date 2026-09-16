@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Spinner } from "@/components/ui/Spinner";
 import { PageShell } from "@/components/ui/PageShell";
+import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
 
 type AuthGuardProps = {
   children: React.ReactNode;
+  skipOnboarding?: boolean;
 };
 
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { status } = useAuth();
+export function AuthGuard({ children, skipOnboarding = false }: AuthGuardProps) {
+  const { status, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -36,5 +38,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  return <>{children}</>;
+  if (skipOnboarding || !user) return <>{children}</>;
+  return (
+    <OnboardingGate key={user.userId} userId={user.userId}>
+      {children}
+    </OnboardingGate>
+  );
 }

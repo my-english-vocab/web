@@ -49,6 +49,12 @@ export type AuthUser = {
   role: "USER" | "ADMIN";
 };
 
+export type ProfileResponse = {
+  userId: number;
+  username: string;
+  displayName: string;
+};
+
 export type Word = {
   id: number;
   term: string;

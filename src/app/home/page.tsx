@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AccountPanel } from "@/components/account/AccountPanel";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { IconBook, IconChart, IconCheckCircle } from "@/components/ui/Icons";
+import { IconBook, IconCheckCircle } from "@/components/ui/Icons";
 import { PageShell } from "@/components/ui/PageShell";
 import { getWords } from "@/lib/api/words";
+import { restartOnboarding } from "@/lib/onboarding/session";
 import styles from "./home.module.css";
 
 function HomeContent() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
   const [wordCount, setWordCount] = useState<number | null>(null);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [wordLoadFailed, setWordLoadFailed] = useState(false);
+  const [accountPanelOpen, setAccountPanelOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,26 +26,28 @@ function HomeContent() {
         if (!cancelled) setWordCount(words.length);
       })
       .catch(() => {
-        if (!cancelled) setWordCount(0);
+        // A failed request is not evidence of an empty wordbook.
+        if (!cancelled) setWordLoadFailed(true);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  async function handleLogout() {
-    setLoggingOut(true);
-    try {
-      await logout();
-      router.replace("/login");
-    } finally {
-      setLoggingOut(false);
-    }
+  const closeAccountPanel = useCallback(() => setAccountPanelOpen(false), []);
+
+  function handleRestartOnboarding() {
+    if (!user) return;
+    restartOnboarding(user.userId);
+    setAccountPanelOpen(false);
+    router.push("/onboarding");
   }
 
   const isEmpty = wordCount === 0;
   const hint =
-    wordCount === null
+    wordLoadFailed
+      ? "단어 수를 불러오지 못했어요. 나의 단어장에서 다시 확인해 주세요."
+      : wordCount === null
       ? "단어를 불러오는 중이에요"
       : isEmpty
         ? "첫 단어를 추가하고 시작해 보세요"
@@ -50,18 +56,26 @@ function HomeContent() {
   return (
     <PageShell hideHeader>
       <div className={styles.topBar}>
+        <button
+          ref={profileButtonRef}
+          type="button"
+          className={styles.profileTrigger}
+          onClick={() => setAccountPanelOpen(true)}
+          aria-expanded={accountPanelOpen}
+          aria-haspopup="dialog"
+          aria-label="마이페이지 열기"
+        >
+          <span className={styles.panelMenuIcon} aria-hidden>
+            <svg viewBox="0 0 24 24">
+              <path d="M5 7h14M5 12h14M5 17h14" />
+            </svg>
+          </span>
+          <span className={styles.profileName}>{user?.displayName}</span>
+        </button>
         <div className={styles.brandMark}>
           <span className={styles.brandDot} aria-hidden />
           <span className={styles.brandName}>My English Vocab</span>
         </div>
-        <button
-          type="button"
-          className={styles.logout}
-          onClick={handleLogout}
-          disabled={loggingOut}
-        >
-          {loggingOut ? "나가는 중..." : "로그아웃"}
-        </button>
       </div>
 
       <section className={styles.welcome}>
@@ -83,7 +97,9 @@ function HomeContent() {
       <div className={styles.cardsRow}>
         <div className={styles.heroCard}>
           <p className={styles.statLabel}>저장된 단어</p>
-          {wordCount === null ? (
+          {wordLoadFailed ? (
+            <p className={styles.statValue} aria-label="단어 수 확인 불가">—</p>
+          ) : wordCount === null ? (
             <div className={styles.skeleton} aria-hidden />
           ) : (
             <p className={styles.statValue}>
@@ -96,6 +112,15 @@ function HomeContent() {
               ? "모르는 단어부터 하나씩 모아 보세요"
               : "모르는 단어만 모아 둔 나만의 목록"}
           </p>
+          {isEmpty ? (
+            <button
+              type="button"
+              className={styles.heroCta}
+              onClick={handleRestartOnboarding}
+            >
+              추천 단어로 시작하기
+            </button>
+          ) : null}
           {isEmpty ? (
             <button
               type="button"
@@ -147,29 +172,15 @@ function HomeContent() {
             </span>
             <span className={styles.chevron}>›</span>
           </button>
-          {user?.role === "ADMIN" ? (
-            <button
-              type="button"
-              className={styles.menuButton}
-              onClick={() => router.push("/admin")}
-            >
-              <span
-                className={`${styles.iconWell} ${styles.iconWellIndigo}`}
-                aria-hidden
-              >
-                <IconChart size={24} />
-              </span>
-              <span>
-                <span className={styles.menuTitle}>운영 대시보드</span>
-                <span className={styles.menuDesc}>
-                  사용자 · 활동 · 서비스 통계
-                </span>
-              </span>
-              <span className={styles.chevron}>›</span>
-            </button>
-          ) : null}
         </nav>
       </div>
+      {accountPanelOpen ? (
+        <AccountPanel
+          onClose={closeAccountPanel}
+          onRestartOnboarding={handleRestartOnboarding}
+          returnFocusRef={profileButtonRef}
+        />
+      ) : null}
     </PageShell>
   );
 }
