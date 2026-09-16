@@ -10,6 +10,7 @@ import {
 } from "react";
 import * as authApi from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import { resetOnboardingSession } from "@/lib/onboarding/session";
 import type { AuthUser, LoginRequest, SignupRequest } from "@/lib/api/types";
 import {
   clearAuthStorage,
@@ -25,6 +26,8 @@ type AuthContextValue = {
   user: AuthUser | null;
   login: (data: LoginRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<void>;
+  withdrawAccount: (password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -81,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (data: LoginRequest) => {
     const res = await authApi.login(data);
+    resetOnboardingSession(res.userId);
     const nextUser: AuthUser = {
       userId: res.userId,
       username: res.username,
@@ -101,6 +105,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [login],
   );
 
+  const updateDisplayName = useCallback(async (displayName: string) => {
+    const profile = await authApi.updateProfile(displayName);
+    setUser((current) => {
+      if (!current) return current;
+      const updated = { ...current, displayName: profile.displayName };
+      setStoredUser(updated);
+      return updated;
+    });
+  }, []);
+
+  const withdrawAccount = useCallback(async (password: string) => {
+    await authApi.withdraw(password);
+    clearAuthStorage();
+    setUser(null);
+    setStatus("unauthenticated");
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -116,8 +137,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ status, user, login, signup, logout }),
-    [status, user, login, signup, logout],
+    () => ({
+      status,
+      user,
+      login,
+      signup,
+      updateDisplayName,
+      withdrawAccount,
+      logout,
+    }),
+    [
+      status,
+      user,
+      login,
+      signup,
+      updateDisplayName,
+      withdrawAccount,
+      logout,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

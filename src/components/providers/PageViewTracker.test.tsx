@@ -35,6 +35,8 @@ describe("PageViewTracker", () => {
       },
       login: vi.fn(),
       signup: vi.fn(),
+      updateDisplayName: vi.fn(),
+      withdrawAccount: vi.fn(),
       logout: vi.fn(),
     });
 
@@ -50,6 +52,8 @@ describe("PageViewTracker", () => {
       user: null,
       login: vi.fn(),
       signup: vi.fn(),
+      updateDisplayName: vi.fn(),
+      withdrawAccount: vi.fn(),
       logout: vi.fn(),
     });
 

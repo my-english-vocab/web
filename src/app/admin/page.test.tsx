@@ -49,6 +49,8 @@ describe("AdminDashboardPage", () => {
       },
       login: vi.fn(),
       signup: vi.fn(),
+      updateDisplayName: vi.fn(),
+      withdrawAccount: vi.fn(),
       logout: vi.fn(),
     });
 
@@ -142,6 +144,8 @@ describe("AdminDashboardPage", () => {
       },
       login: vi.fn(),
       signup: vi.fn(),
+      updateDisplayName: vi.fn(),
+      withdrawAccount: vi.fn(),
       logout: vi.fn(),
     });
 
