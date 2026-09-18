@@ -265,6 +265,12 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+}
+
+.detailTitle > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .favoriteButton {
