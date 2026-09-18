@@ -1,0 +1,36 @@
+.button {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.button:focus-visible {
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled) {
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+  }
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.speaking {
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+}

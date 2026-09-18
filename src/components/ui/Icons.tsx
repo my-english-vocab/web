@@ -164,6 +164,33 @@ export function IconStar({
   );
 }
 
+export function IconVolume({ size = 22, className }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M5 9.25h3.25L12.5 5.5v13l-4.25-3.75H5a1.5 1.5 0 0 1-1.5-1.5v-2.5A1.5 1.5 0 0 1 5 9.25Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 9a4.25 4.25 0 0 1 0 6M18.5 6.5a7.8 7.8 0 0 1 0 11"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconEye({ size = 22, className }: IconProps) {
   return (
     <svg

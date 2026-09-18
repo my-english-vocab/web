@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { IconPartyPopper } from "@/components/ui/Icons";
 import { PageShell } from "@/components/ui/PageShell";
+import { PronunciationButton } from "@/components/ui/PronunciationButton";
 import { Spinner } from "@/components/ui/Spinner";
 import { ApiError } from "@/lib/api/client";
 import { completeQuizSet } from "@/lib/api/quiz";
@@ -43,6 +44,9 @@ export function QuizSession({ selection }: QuizSessionProps) {
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [savingAttempt, setSavingAttempt] = useState(false);
   const [attemptSaveError, setAttemptSaveError] = useState(false);
+  const [pronunciationError, setPronunciationError] = useState<string | null>(
+    null,
+  );
   const savedAttemptRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -127,6 +131,7 @@ export function QuizSession({ selection }: QuizSessionProps) {
   }, [attemptId, learnedCount, quizWords.length, selectedQuiz]);
 
   const finishCurrentWord = useCallback((completedLearnedCount: number) => {
+    setPronunciationError(null);
     setShowDefinition(false);
     setCurrentIndex((previous) => previous + 1);
     if (currentIndex + 1 >= quizWords.length) {
@@ -360,9 +365,37 @@ export function QuizSession({ selection }: QuizSessionProps) {
         </div>
 
         <div className={styles.card}>
-          <h2 className={styles.term}>{currentWord.term}</h2>
+          <div className={styles.termRow}>
+            <h2 className={styles.term}>{currentWord.term}</h2>
+            <PronunciationButton
+              text={currentWord.term}
+              onUnsupported={() =>
+                setPronunciationError(
+                  "이 브라우저에서는 음성 재생을 지원하지 않아요.",
+                )
+              }
+            />
+          </div>
+          {pronunciationError ? (
+            <p className={styles.pronunciationError} role="alert">
+              {pronunciationError}
+            </p>
+          ) : null}
           <div className={styles.section}>
-            <span className={styles.label}>예문</span>
+            <div className={styles.sectionHeader}>
+              <span className={styles.label}>예문</span>
+              {currentWord.exampleSentence ? (
+                <PronunciationButton
+                  text={currentWord.exampleSentence}
+                  ariaLabel="예문 발음 듣기"
+                  onUnsupported={() =>
+                    setPronunciationError(
+                      "이 브라우저에서는 음성 재생을 지원하지 않아요.",
+                    )
+                  }
+                />
+              ) : null}
+            </div>
             <p className={styles.example}>
               {currentWord.exampleSentence || "예문이 없어요."}
             </p>

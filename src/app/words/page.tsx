@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { IconHelp, IconPlus, IconStar } from "@/components/ui/Icons";
 import { Modal } from "@/components/ui/Modal";
 import { PageShell } from "@/components/ui/PageShell";
+import { PronunciationButton } from "@/components/ui/PronunciationButton";
 import { Spinner } from "@/components/ui/Spinner";
 import { TextField } from "@/components/ui/TextField";
 import { ApiError } from "@/lib/api/client";
@@ -33,6 +34,9 @@ function WordsContent() {
   const [saving, setSaving] = useState(false);
   const [favoriteSaving, setFavoriteSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pronunciationError, setPronunciationError] = useState<string | null>(
+    null,
+  );
   const [showFloatFab, setShowFloatFab] = useState(false);
   const addBarRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +125,7 @@ function WordsContent() {
     setEditing(false);
     setConfirmDelete(false);
     setError(null);
+    setPronunciationError(null);
     setTerm(word.term);
     setDefinition(word.definition);
     setExampleSentence(word.exampleSentence ?? "");
@@ -132,6 +137,7 @@ function WordsContent() {
     setEditing(false);
     setConfirmDelete(false);
     setError(null);
+    setPronunciationError(null);
   }
 
   async function handleSave() {
@@ -337,6 +343,14 @@ function WordsContent() {
                 <IconStar size={25} filled={selected.favorite} />
               </button>
               <span>{selected.term}</span>
+              <PronunciationButton
+                text={selected.term}
+                onUnsupported={() =>
+                  setPronunciationError(
+                    "이 브라우저에서는 음성 재생을 지원하지 않아요.",
+                  )
+                }
+              />
             </span>
           ) : (
             ""
@@ -372,6 +386,11 @@ function WordsContent() {
         }
       >
         {error ? <p className={styles.error}>{error}</p> : null}
+        {pronunciationError ? (
+          <p className={styles.error} role="alert">
+            {pronunciationError}
+          </p>
+        ) : null}
         {editing ? (
           <div className={styles.editForm}>
             <TextField
@@ -432,7 +451,20 @@ function WordsContent() {
               <p className={styles.metaValue}>Lv.{selected?.level}</p>
             </div>
             <div className={styles.metaRow}>
-              <span className={styles.metaLabel}>예문</span>
+              <div className={styles.metaLabelRow}>
+                <span className={styles.metaLabel}>예문</span>
+                {selected?.exampleSentence ? (
+                  <PronunciationButton
+                    text={selected.exampleSentence}
+                    ariaLabel="예문 발음 듣기"
+                    onUnsupported={() =>
+                      setPronunciationError(
+                        "이 브라우저에서는 음성 재생을 지원하지 않아요.",
+                      )
+                    }
+                  />
+                ) : null}
+              </div>
               <p className={styles.metaValue}>
                 {selected?.exampleSentence || "없음"}
               </p>
