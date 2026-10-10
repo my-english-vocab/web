@@ -89,7 +89,7 @@ describe("words page", () => {
 
     expect(screen.getByRole("button", { name: /apple/ })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /zebra/ })).not.toBeInTheDocument();
-    expect(screen.getByText("1개")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 2개");
   });
 
   it("toggles the selected word favorite state from the detail title", async () => {
