@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/Button";
 import { PageShell } from "@/components/ui/PageShell";
+import { Spinner } from "@/components/ui/Spinner";
 import { TextField } from "@/components/ui/TextField";
 import { getAiUsage } from "@/lib/api/ai";
 import { ApiError } from "@/lib/api/client";
@@ -12,9 +13,9 @@ import type { AiUsageResponse } from "@/lib/api/types";
 import { createWord, generateExample } from "@/lib/api/words";
 import styles from "./add.module.css";
 
-function AddWordContent() {
+function AddWordContent({ initialTerm }: { initialTerm: string }) {
   const router = useRouter();
-  const [term, setTerm] = useState("");
+  const [term, setTerm] = useState(initialTerm);
   const [definition, setDefinition] = useState("");
   const [exampleSentence, setExampleSentence] = useState("");
   const [meaningOfExampleSentence, setMeaningOfExampleSentence] = useState("");
@@ -185,10 +186,25 @@ function AddWordContent() {
   );
 }
 
+function AddWordFromSearch() {
+  const searchParams = useSearchParams();
+  const initialTerm = searchParams.get("term")?.trim() ?? "";
+
+  return <AddWordContent key={initialTerm} initialTerm={initialTerm} />;
+}
+
 export default function AddWordPage() {
   return (
     <AuthGuard>
-      <AddWordContent />
+      <Suspense
+        fallback={
+          <PageShell title="단어 추가" showBack backHref="/words">
+            <Spinner label="단어 추가 화면을 불러오는 중..." />
+          </PageShell>
+        }
+      >
+        <AddWordFromSearch />
+      </Suspense>
     </AuthGuard>
   );
 }

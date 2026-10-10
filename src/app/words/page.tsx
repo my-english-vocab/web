@@ -28,6 +28,7 @@ function WordsContent() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOrder>("recent");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
+  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Word | null>(null);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -100,10 +101,17 @@ function WordsContent() {
     };
   }, [words.length, loading]);
 
+  const searchQuery = search.trim().toLowerCase();
+
   const visibleWords = useMemo(() => {
-    const copy = favoriteOnly
-      ? words.filter((word) => word.favorite)
-      : [...words];
+    const copy = words.filter((word) => {
+      if (favoriteOnly && !word.favorite) return false;
+      return (
+        !searchQuery ||
+        word.term.toLowerCase().includes(searchQuery) ||
+        word.definition.toLowerCase().includes(searchQuery)
+      );
+    });
     if (sort === "az") {
       copy.sort((a, b) => a.term.localeCompare(b.term));
     } else if (sort === "level") {
@@ -118,7 +126,7 @@ function WordsContent() {
       );
     }
     return copy;
-  }, [favoriteOnly, words, sort]);
+  }, [favoriteOnly, words, sort, searchQuery]);
 
   function openWord(word: Word) {
     setSelected(word);
@@ -211,6 +219,35 @@ function WordsContent() {
       ) : (
         <div className={styles.content}>
           {words.length > 0 ? (
+            <div
+              className={styles.searchBar}
+              role="search"
+              aria-label="내 단어장 검색"
+            >
+              <TextField
+                label="단어 검색"
+                name="wordSearch"
+                type="search"
+                placeholder="영어 단어나 한국어 뜻 입력"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                aria-controls="word-results"
+              />
+              <button
+                type="button"
+                className={styles.searchClear}
+                aria-label="검색어 지우기"
+                disabled={!search}
+                onClick={() => setSearch("")}
+              >
+                지우기
+              </button>
+            </div>
+          ) : null}
+
+          {words.length > 0 ? (
             <div className={styles.toolbar} ref={toolbarRef}>
               <div className={styles.sortGroup}>
                 {(
@@ -241,7 +278,11 @@ function WordsContent() {
                 </button>
               </div>
               <div className={styles.toolbarRight}>
-                <span className={styles.count}>{visibleWords.length}개</span>
+                <span className={styles.count} role="status">
+                  {searchQuery || favoriteOnly
+                    ? `${visibleWords.length} / ${words.length}개`
+                    : `${visibleWords.length}개`}
+                </span>
                 <div className={styles.toolbarAdd}>
                   <Button
                     size="sm"
@@ -269,17 +310,42 @@ function WordsContent() {
               </div>
             </div>
           ) : visibleWords.length === 0 ? (
-            <div className={styles.filteredEmpty}>
-              <div className={styles.filteredEmptyIcon} aria-hidden>
-                <IconStar size={24} />
-              </div>
+            <div id="word-results" className={styles.filteredEmpty}>
+              {searchQuery ? null : (
+                <div className={styles.filteredEmptyIcon} aria-hidden>
+                  <IconStar size={24} />
+                </div>
+              )}
               <p className={styles.filteredEmptyTitle}>
-                즐겨찾기한 단어가 없어요
+                {searchQuery
+                  ? "검색 결과가 없어요"
+                  : "즐겨찾기한 단어가 없어요"}
               </p>
-              <p>단어 상세에서 별을 눌러 추가해 보세요.</p>
+              <p>
+                {searchQuery
+                  ? favoriteOnly
+                    ? "즐겨찾기한 단어에서 찾지 못했어요. 검색어를 바꾸거나 즐겨찾기 필터를 해제해 보세요."
+                    : "다른 단어나 뜻으로 검색하거나, 이 단어를 바로 추가해 보세요."
+                  : "단어 상세에서 별을 눌러 추가해 보세요."}
+              </p>
+              {searchQuery ? (
+                <div className={styles.filteredEmptyAction}>
+                  <Button
+                    fullWidth={false}
+                    onClick={() =>
+                      router.push(
+                        `/words/add?term=${encodeURIComponent(search.trim())}`,
+                      )
+                    }
+                  >
+                    <IconPlus size={18} />
+                    이 단어 추가하기
+                  </Button>
+                </div>
+              ) : null}
             </div>
           ) : (
-            <ul className={styles.list}>
+            <ul id="word-results" className={styles.list}>
               {visibleWords.map((word, index) => (
                 <li key={word.id}>
                   <button
