@@ -128,6 +128,14 @@ function WordsContent() {
     return copy;
   }, [favoriteOnly, words, sort, searchQuery]);
 
+  function addSearchWord() {
+    const value = search.trim();
+    const hasKorean = /[ㄱ-ㅎㅏ-ㅣ가-힣\u1100-\u11FF]/.test(value);
+    const params = new URLSearchParams();
+    params.set(hasKorean ? "definition" : "term", value);
+    router.push(`/words/add?${params.toString()}`);
+  }
+
   function openWord(word: Word) {
     setSelected(word);
     setEditing(false);
@@ -332,11 +340,7 @@ function WordsContent() {
                 <div className={styles.filteredEmptyAction}>
                   <Button
                     fullWidth={false}
-                    onClick={() =>
-                      router.push(
-                        `/words/add?term=${encodeURIComponent(search.trim())}`,
-                      )
-                    }
+                    onClick={addSearchWord}
                   >
                     <IconPlus size={18} />
                     이 단어 추가하기
