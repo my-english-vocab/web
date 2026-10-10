@@ -13,10 +13,16 @@ import type { AiUsageResponse } from "@/lib/api/types";
 import { createWord, generateExample } from "@/lib/api/words";
 import styles from "./add.module.css";
 
-function AddWordContent({ initialTerm }: { initialTerm: string }) {
+function AddWordContent({
+  initialTerm,
+  initialDefinition,
+}: {
+  initialTerm: string;
+  initialDefinition: string;
+}) {
   const router = useRouter();
   const [term, setTerm] = useState(initialTerm);
-  const [definition, setDefinition] = useState("");
+  const [definition, setDefinition] = useState(initialDefinition);
   const [exampleSentence, setExampleSentence] = useState("");
   const [meaningOfExampleSentence, setMeaningOfExampleSentence] = useState("");
   const [usage, setUsage] = useState<AiUsageResponse | null>(null);
@@ -189,8 +195,15 @@ function AddWordContent({ initialTerm }: { initialTerm: string }) {
 function AddWordFromSearch() {
   const searchParams = useSearchParams();
   const initialTerm = searchParams.get("term")?.trim() ?? "";
+  const initialDefinition = searchParams.get("definition")?.trim() ?? "";
 
-  return <AddWordContent key={initialTerm} initialTerm={initialTerm} />;
+  return (
+    <AddWordContent
+      key={JSON.stringify([initialTerm, initialDefinition])}
+      initialTerm={initialTerm}
+      initialDefinition={initialDefinition}
+    />
+  );
 }
 
 export default function AddWordPage() {
